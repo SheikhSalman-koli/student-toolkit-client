@@ -1,5 +1,8 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import Spinner from '../shared/Loader/Spinner';
 
 const colors = [
     { name: "Blue", hex: "#3B82F6" },
@@ -10,6 +13,7 @@ const colors = [
 
 const Schedule = () => {
     const [selected, setSelected] = useState('');
+    const [spinner, setSpinner] = useState(false)
 
     const toggleColor = (hex) => {
         setSelected(hex)
@@ -30,7 +34,8 @@ const Schedule = () => {
         return `${hour}:${minute} ${ampm}`;
     }
 
-    const handleSchedule =async (e) => {
+    const handleSchedule = async (e) => {
+        setSpinner(true)
         e.preventDefault()
         const form = e.target
         const className = form.class.value
@@ -41,10 +46,26 @@ const Schedule = () => {
         const location = form.location.value
         const subject = form.subject.value
         const color = selected
+
         const scheduleData = { className, day, instructor, startTime, endTime, location, subject, color }
 
-        const {data} =await axios.post('http://localhost:3000/saveClass',scheduleData)
-        console.log(data);
+        try {
+            const { data } = await axios.post('http://localhost:3000/saveClass', scheduleData)
+            // console.log(data);
+            if (data?.insertedId) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Your class has been saved",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+            setSpinner(false)
+            form.reset()
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
 
@@ -54,7 +75,7 @@ const Schedule = () => {
             <form onSubmit={handleSchedule}
                 className=''
             >
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6'>
+                <div className='grid grid-cols-1 md:grid-cols-2  gap-x-6'>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Class Name</legend>
                         <input
@@ -62,20 +83,22 @@ const Schedule = () => {
                             type="text"
                             className="input w-full"
                             placeholder="Enter Class Name"
+                            required
                         />
                     </fieldset>
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Instructor Name</legend>
+                        <legend className="fieldset-legend">Instructor/Teacher Name</legend>
                         <input
                             name='instructor'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Instructor Name"
+                            required
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Day</legend>
-                        <select name="day" className='select w-full' defaultValue='select a day'>
+                        <select name="day" className='select w-full' defaultValue='select a day' required>
                             <option disabled={true}>select a day</option>
                             <option value="Saturday">Saturday</option>
                             <option value="Sunday">Sunday</option>
@@ -94,6 +117,8 @@ const Schedule = () => {
                             type="text"
                             className="input w-full"
                             placeholder="Enter Subject Name"
+                            required
+
                         />
                     </fieldset>
                     <fieldset className="fieldset">
@@ -103,6 +128,7 @@ const Schedule = () => {
                             type="time"
                             className="input w-full"
                             placeholder="When Starts"
+                            required
                         />
                     </fieldset>
                     <fieldset className="fieldset">
@@ -112,15 +138,17 @@ const Schedule = () => {
                             type="time"
                             className="input w-full"
                             placeholder="When Ends"
+                            required
                         />
                     </fieldset>
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Location</legend>
+                        <legend className="fieldset-legend">Location (place name/ Online)</legend>
                         <input
                             name='location'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Location"
+                            required
                         />
                     </fieldset>
                     <fieldset className="fieldset">
@@ -149,10 +177,14 @@ const Schedule = () => {
                     </fieldset>
                 </div>
 
-                <button
+                {
+                    spinner ? (<Spinner />)
+                : ( <button
                     type='submit'
-                    className='btn bg-[#3B82F6] mt-6 text-white'
-                >Save</button>
+                    className='btn bg-blue-600 hover:bg-blue-700 transition mt-6 text-white'
+                >Save</button> ) 
+                }
+               
 
             </form>
         </div>
