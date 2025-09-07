@@ -1,8 +1,10 @@
-import axios from 'axios';
+
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Spinner from '../shared/Loader/Spinner';
+import useAuth from '../shared/Hooks/useAuth';
+import useURL from '../shared/Hooks/useURL';
 
 const colors = [
     { name: "Blue", hex: "#3B82F6" },
@@ -14,6 +16,9 @@ const colors = [
 const Schedule = () => {
     const [selected, setSelected] = useState('');
     const [spinner, setSpinner] = useState(false)
+    const axiosInstance = useURL()
+    const {user} = useAuth()
+
 
     const toggleColor = (hex) => {
         setSelected(hex)
@@ -46,11 +51,12 @@ const Schedule = () => {
         const location = form.location.value
         const subject = form.subject.value
         const color = selected
+        const email = user?.email
 
-        const scheduleData = { className, day, instructor, startTime, endTime, location, subject, color }
+        const scheduleData = { className, day, instructor, startTime, endTime, location, subject, color, email}
 
         try {
-            const { data } = await axios.post('http://localhost:3000/saveClass', scheduleData)
+            const { data } = await axiosInstance.post('/saveClass', scheduleData)
             // console.log(data);
             if (data?.insertedId) {
                 Swal.fire({
