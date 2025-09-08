@@ -1,0 +1,8 @@
+ a {
+     margin-right: 12px;
+     font-weight: 600;
+ }
+
+ a.active {
+     color: chocolate;
+ }

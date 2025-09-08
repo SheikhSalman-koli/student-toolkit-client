@@ -1,110 +1,53 @@
+import React from 'react';
+import { FaTimes } from 'react-icons/fa';
 
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
-import Spinner from '../shared/Loader/Spinner';
-import useAuth from '../shared/Hooks/useAuth';
-import useURL from '../shared/Hooks/useURL';
+const UpdateModal = ({ schdule, onClose }) => {
 
-const colors = [
-    { name: "Blue", hex: "#3B82F6" },
-    { name: "Green", hex: "#22C55E" },
-    { name: "Orange", hex: "#F97316" },
-    { name: "Purple", hex: "#8B5CF6" },
-];
-
-const Schedule = () => {
-    const [selected, setSelected] = useState('');
-    const [spinner, setSpinner] = useState(false)
-    const axiosInstance = useURL()
-    const {user} = useAuth()
-
-
-    const toggleColor = (hex) => {
-        setSelected(hex)
-        // setSelected((prev) =>
-        //     prev.includes(hex) ? prev.filter((c) => c !== hex) : [...prev, hex]
-        // );
-    };
-
-    function formatTimeTo12Hour(time) {
-        if (!time) return "";
-
-        let [hour, minute] = time.split(":");
-        hour = parseInt(hour);
-
-        const ampm = hour >= 12 ? "PM" : "AM";
-        // convert 0 to 12
-        hour = hour % 12 || 12;
-        return `${hour}:${minute} ${ampm}`;
-    }
-
-    const handleSchedule = async (e) => {
-        setSpinner(true)
-        e.preventDefault()
-        const form = e.target
-        const className = form.class.value
-        const day = form.day.value
-        const instructor = form.instructor.value
-        const startTime = formatTimeTo12Hour(form.starttime.value)  //new Date(form.starttime.value).toISOString()    // formatTimeTo12Hour(form.starttime.value)
-        const endTime = formatTimeTo12Hour(form.endtime.value)
-        const location = form.location.value
-        const subject = form.subject.value
-        const color = selected
-        const email = user?.email
-
-        const scheduleData = { className, day, instructor, startTime, endTime, location, subject, color, email}
-        // console.log(scheduleData);
-        try {
-            const { data } = await axiosInstance.post('/saveClass', scheduleData)
-            // console.log(data);
-            if (data?.insertedId) {
-                Swal.fire({
-                    position: "top-end",
-                    icon: "success",
-                    title: "Your class has been saved",
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            }
-            setSpinner(false)
-            form.reset()
-        } catch (error) {
-            toast.error(error.message)
-        }
-    }
-
+    const {className, instructor, day, subject, startTime, endTime, location} = schdule || {}
 
     return (
-        <div className='max-w-10/12 md:max-w-3/5 mx-auto my-10'>
-            <h1 className='text-3xl text-[#10B981] text-center font-bold'>Class Schedule</h1>
-            <form onSubmit={handleSchedule}
+        <div className="fixed inset-0 z-50  bg-black/30 overflow-y-auto  p-6 md:p-10 transition-all duration-300">
+            <div className="bg-white w-full max-w-2xl mx-auto rounded shadow-lg p-6 relative transform transition-all duration-300 scale-100 animate-fadeIn">
+
+              <div className='flex justify-between items-center'>
+                <h3 className='text-2xl text-orange-400'>Update Schedule</h3>
+                  <button
+                    className="text-gray-500 hover:text-red-500"
+                    onClick={onClose}
+                >
+                    <FaTimes />
+                </button>
+              </div>
+              
+            <form //onSubmit={handleSchedule}
                 className=''
             >
                 <div className='grid grid-cols-1 md:grid-cols-2  gap-x-6'>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Class Name</legend>
                         <input
+                          defaultValue={className}
                             name='class'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Class Name"
-                            required
+                            
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Instructor/Teacher Name</legend>
                         <input
+                            defaultValue={instructor}
                             name='instructor'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Instructor Name"
-                            required
+                            
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Day</legend>
-                        <select name="day" className='select w-full' defaultValue='select a day' required>
+                        <select name="day" defaultValue={day} className='select w-full' >
                             <option disabled={true}>select a day</option>
                             <option value="Saturday">Saturday</option>
                             <option value="Sunday">Sunday</option>
@@ -119,45 +62,50 @@ const Schedule = () => {
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Subject</legend>
                         <input
+                        defaultValue={subject}
                             name='subject'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Subject Name"
-                            required
+                            
 
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Start Time</legend>
                         <input
+                        defaultValue={startTime}
                             name='starttime'
                             type="datetime-local"
                             className="input w-full"
                             placeholder="When Starts"
-                            required
+                            
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">End Time</legend>
                         <input
+                        defaultValue={endTime}
                             name='endtime'
                             type="time"
                             className="input w-full"
                             placeholder="When Ends"
-                            required
+                            
                         />
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Location (place name/ Online)</legend>
                         <input
+                        defaultValue={location}
                             name='location'
                             type="text"
                             className="input w-full"
                             placeholder="Enter Location"
-                            required
+                            
                         />
                     </fieldset>
-                    <fieldset className="fieldset">
+
+                    {/* <fieldset className="fieldset">
                         <legend className="fieldset-legend">Choose A Color</legend>
                         <div className="flex gap-4 pt-2">
                             {colors.map((color) => (
@@ -180,23 +128,25 @@ const Schedule = () => {
                                 </label>
                             ))}
                         </div>
-                    </fieldset>
+                    </fieldset> */}
                 </div>
 
                 <button
                     type='submit'
                     className='btn bg-blue-600 hover:bg-blue-700 transition mt-6 text-white'
                 >
-                   {
-                    spinner ? 'Saving...' : 'Save'
-                   } 
-                    
+                  Update
                 </button>
                
 
             </form>
+
+
+
+
+            </div>
         </div>
     );
 };
 
-export default Schedule;
+export default UpdateModal;

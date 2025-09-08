@@ -2,11 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router';
 import useAuth from '../shared/Hooks/useAuth';
 import toast from 'react-hot-toast';
+import './nav.css'
 
 const Navber = () => {
 
     const {user, logout} = useAuth()
-    console.log(user);
+    // console.log(user);
 
 
     const handleLogout =()=>{
