@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import Spinner from '../shared/Loader/Spinner';
 import useAuth from '../shared/Hooks/useAuth';
 import useURL from '../shared/Hooks/useURL';
 
@@ -46,8 +45,8 @@ const Schedule = () => {
         const className = form.class.value
         const day = form.day.value
         const instructor = form.instructor.value
-        const startTime = formatTimeTo12Hour(form.starttime.value)  //new Date(form.starttime.value).toISOString()    // formatTimeTo12Hour(form.starttime.value)
-        const endTime = formatTimeTo12Hour(form.endtime.value)
+        const startTime = new Date(form.starttime.value).toISOString()  //new Date(form.starttime.value).toISOString()    // formatTimeTo12Hour(form.starttime.value)
+        const endTime = form.endtime.value
         const location = form.location.value
         const subject = form.subject.value
         const color = selected
