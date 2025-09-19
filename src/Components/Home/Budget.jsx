@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import useAuth from '../shared/Hooks/useAuth';
+import useURL from '../shared/Hooks/useURL';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const Budget = () => {
 
     const [selectedType, setSelectedType] = useState('')
-    const {user} = useAuth()
+    const [loding, setLoading] = useState(false)
+    const { user } = useAuth()
+    const axiosInstance = useURL()
 
-    const handleBudget = (e) => {
+    const handleBudget = async (e) => {
+        setLoading(true)
         e.preventDefault()
         const form = e.target
         const type = selectedType
@@ -17,10 +23,25 @@ const Budget = () => {
         const email = user?.email
 
 
-        const budgetData = { type, category, amount, date, description, email}
-        console.log(budgetData);
-    
+        const budgetData = { type, category, amount, date, description, email }
+        // console.log(budgetData);
 
+        try {
+            const { data } = await axiosInstance.post('/saveBudget', budgetData)
+            if (data?.insertedId) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: `Your ${selectedType} has been saved`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                form.reset()
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+        setLoading(false)
     }
 
     return (
@@ -52,6 +73,7 @@ const Budget = () => {
                                     <option value="part-time job">Part-time job</option>
                                     <option value="scholarship">Scholarship</option>
                                     <option value="tution">Tution</option>
+                                    <option value="others">others</option>
                                 </select>
                             </fieldset>
 
@@ -65,12 +87,11 @@ const Budget = () => {
                                     <option value="school Fees">School Fees</option>
                                     <option value="transport">Transport</option>
                                     <option value="entertainment">Entertainment</option>
+                                     <option value="others">others</option>
                                 </select>
                             </fieldset>
 
                     }
-
-
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Amount</legend>
                         <input
@@ -103,17 +124,13 @@ const Budget = () => {
                             required
                         />
                     </fieldset>
-
-
-
                 </div>
 
                 <button
                     type='submit'
                     className='btn bg-blue-600 hover:bg-blue-700 transition mt-6 text-white'
                 >
-                    Save
-
+                    {loding ? " Save..." : " Save"}
                 </button>
 
 
