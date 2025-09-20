@@ -1,71 +1,97 @@
 import { useState } from "react";
 import useURL from "../shared/Hooks/useURL";
+import Spinner from '../shared/Loader/Spinner'
+import AiActionButtons from "../actions/AiActionButtons";
+import Markdown from 'react-markdown'
+
 
 function OpenAi() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false)
 
-    const axiosInstance = useURL()
+  const axiosInstance = useURL()
+  console.log(messages);
+
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    setLoading(true)
 
+    if (!input.trim()) return;
     // Add user message to chat
     setMessages([...messages, { sender: "user", text: input }]);
 
     try {
-    //   const res = await fetch("http://localhost:5000/chat", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ message: input }),
-    //   });
-
-        const {data} =await axiosInstance.post(`/chat`, { message: input }) 
-
-    //   const data = await res.json();
-       console.log(data);
-
+      const { data } = await axiosInstance.post(`/chat`, { message: input })
+      // console.log(data);
       // Add AI reply
-      setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+      setMessages((prev) => [...prev, { sender: "bot", replay: data?.reply }]);
     } catch (error) {
       console.error(error);
     }
 
     setInput("");
+    setLoading(false)
   };
 
+  const handleKeyDown =(e)=>{
+    if(e.key === "Enter"){
+      e.preventDefault()
+      sendMessage()
+    }
+  }
+
+
+
   return (
-    <div className="p-6 max-w-lg mx-auto">
+    <div className="p-6 max-w-10/12 mx-auto">
       <h1 className="text-xl font-bold mb-4">💬 AI Chatbot</h1>
 
-      <div className="border p-4 h-96 overflow-y-auto rounded mb-4">
+      <div className="p-4 h-96 overflow-y-auto rounded mb-4">
         {messages?.map((msg, idx) => (
-          <p
-            key={idx}
-            className={msg.sender === "user" ? "text-blue-600" : "text-green-600"}
-          >
-            <b>{msg.sender}:</b> {msg.text}
-          </p>
-        ))}
 
-        <button
-        onClick={()=> setMessages([])}
-        className="btn"
-        >clear History</button>
+          <div key={idx}>
+            <p
+              className={msg?.sender === "user" && "text-gray-700 bg-gray-100 py-1 px-3 rounded-3xl mb-5"}
+            >
+              {msg?.text}
+            </p>
+            {
+              msg?.replay &&
+              <div className="mb-8">
+                {loading && <Spinner />}
+                <Markdown>
+      
+                  {msg?.replay}
+          
+                </Markdown>
+
+                <AiActionButtons 
+                 replay={msg?.replay}
+                />
+
+              </div>
+            }
+
+          </div>
+
+        ))}
       </div>
 
       <div className="flex gap-2">
         <input
-          className="border flex-1 p-2 rounded"
+          className="border text-gray-700 flex-1 p-2 rounded"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
+          onKeyDown={handleKeyDown}
+          placeholder="ask anything"
         />
         <button
-          className="bg-blue-500 text-white px-4 rounded"
+          disabled={loading}
+          className={`bg-blue-500 text-white px-4 rounded ${loading ? "cursor-not-allowed" : ""} `}
           onClick={sendMessage}
         >
-          Send
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
     </div>
